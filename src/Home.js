@@ -1,8 +1,19 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
 class Home extends Component {
   render() {
-    return <h1>Home</h1>;
+    const { isAuthenticated } = this.props.auth0;
+    return (
+      <>
+        <h1>Home</h1>
+        {isAuthenticated() && (
+          <>
+            <Link to="/profile">Profile</Link>
+          </>
+        )}
+      </>
+    );
   }
 }
 

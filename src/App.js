@@ -3,15 +3,35 @@ import { Route } from "react-router-dom";
 import Home from "./Home";
 import Profile from "./Profile";
 import Nav from "./Nav";
+import Auth0Service from "./Auth0/Auth0Service";
+import Auth0CallbackComponent from "./Auth0/Auth0Callback";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.auth0 = new Auth0Service(props.history);
+  }
   render() {
     return (
       <>
-        <Nav />
+        <Nav auth0={this.auth0} />
         <div className="body">
-          <Route path="/" exact component={Home} />
-          <Route path="/profile" component={Profile} />
+          <Route
+            path="/"
+            exact
+            render={props => <Home auth0={this.auth0} {...props} />}
+          />
+          <Route
+            path="/callback"
+            render={props => {
+              return <Auth0CallbackComponent auth0={this.auth0} {...props} />;
+            }}
+          />
+          <Route
+            path="/profile"
+            render={props => <Profile auth0={this.auth0} {...props} />}
+          />
         </div>
       </>
     );
