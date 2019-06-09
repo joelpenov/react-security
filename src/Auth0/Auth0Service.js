@@ -3,17 +3,20 @@ import auth0 from "auth0-js";
 export default class Auth0Service {
   constructor(history) {
     this.history = history;
+    this.permissionsRequested = "openid profile email read:courses";
     this.auth0 = new auth0.WebAuth({
       domain: process.env.REACT_APP_AUTH0_DOMAIN,
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
       redirectUri: process.env.REACT_APP_AUTH0_CALLBACK_URL,
+      audience: process.env.REACT_APP_AUTH0_AUDIENCE,
       responseType: "token id_token",
-      scope: "openid profile email"
+      scope: this.permissionsRequested
     });
 
     this.ACCESS_TOKEN = "access_token";
     this.ID_TOKEN = "id_token";
     this.EXPIRES_AT = "expires_at";
+    this.PERMISSIONS = "permissions";
   }
 
   login = () => {
@@ -41,9 +44,12 @@ export default class Auth0Service {
       authResult.expiresIn * 1000 + new Date().getTime()
     );
 
+    const permissions = authResult.scope || this.permissionsRequested || "";
+
     localStorage.setItem(this.ACCESS_TOKEN, authResult.accessToken);
     localStorage.setItem(this.ID_TOKEN, authResult.idToken);
     localStorage.setItem(this.EXPIRES_AT, expiresAt);
+    localStorage.setItem(this.PERMISSIONS, permissions);
   };
 
   isAuthenticated = () => {
@@ -55,6 +61,7 @@ export default class Auth0Service {
     localStorage.removeItem(this.ACCESS_TOKEN);
     localStorage.removeItem(this.ID_TOKEN);
     localStorage.removeItem(this.EXPIRES_AT);
+    localStorage.removeItem(this.PERMISSIONS);
     this.userProfile = null;
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -65,7 +72,7 @@ export default class Auth0Service {
   getAccessToken = () => {
     const accessToken = localStorage.getItem(this.ACCESS_TOKEN);
     if (!accessToken) {
-      throw new Error("No access token available");
+      console.log("No access token available");
     }
     return accessToken;
   };
@@ -79,5 +86,13 @@ export default class Auth0Service {
       this.userProfile = profile;
       callback(this.userProfile);
     });
+  };
+
+  userHasPermission = permissions => {
+    const grantedPermissions = localStorage
+      .getItem(this.PERMISSIONS)
+      .split(" ");
+
+    return permissions.every(x => grantedPermissions.includes(x));
   };
 }

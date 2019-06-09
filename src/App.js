@@ -5,6 +5,9 @@ import Profile from "./Profile";
 import Nav from "./Nav";
 import Auth0Service from "./Auth0/Auth0Service";
 import Auth0CallbackComponent from "./Auth0/Auth0Callback";
+import Public from "./Public";
+import Private from "./Private";
+import Courses from "./Courses";
 
 class App extends Component {
   constructor(props) {
@@ -31,6 +34,28 @@ class App extends Component {
           <Route
             path="/profile"
             render={props => <Profile auth0={this.auth0} {...props} />}
+          />
+          <Route path="/public" component={Public} />
+          <Route
+            path="/private"
+            render={props =>
+              this.auth0.isAuthenticated() ? (
+                <Private auth0={this.auth0} {...props} />
+              ) : (
+                this.auth0.login()
+              )
+            }
+          />
+          <Route
+            path="/courses"
+            render={props => {
+              return this.auth0.isAuthenticated() &&
+                this.auth0.userHasPermission(["read:courses"]) ? (
+                <Courses auth0={this.auth0} {...props} />
+              ) : (
+                this.auth0.login()
+              );
+            }}
           />
         </div>
       </>

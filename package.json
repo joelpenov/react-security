@@ -26,11 +26,14 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.4"
   },
+  "proxy": "http://localhost:2014",
   "scripts": {
-    "start": "cross-env PORT=1985 react-scripts start",
+    "start:client": "cross-env PORT=1985 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:server": "node src/testServer.js",
+    "start": "run-p start:client start:server"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -40,8 +43,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "devDependencies": {
-    "cross-env": "^5.2.0"
-  }
+  ]
 }

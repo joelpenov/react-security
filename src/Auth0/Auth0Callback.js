@@ -7,7 +7,7 @@ export default class Auth0CallbackComponent extends Component {
     if (validUriParamsRe.test(this.props.location.hash)) {
       this.props.auth0.handleAuthorization();
     } else {
-      throw "Invalid callback URL";
+      throw new Error("Invalid callback URL");
     }
   };
 
