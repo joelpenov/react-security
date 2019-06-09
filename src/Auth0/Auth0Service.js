@@ -16,10 +16,15 @@ export default class Auth0Service {
     this.ACCESS_TOKEN = "access_token";
     this.ID_TOKEN = "id_token";
     this.EXPIRES_AT = "expires_at";
+    this.REDIRECT_ON_LOGIN_LOCATION = "redirect_on_login";
     this.PERMISSIONS = "permissions";
   }
 
   login = () => {
+    localStorage.setItem(
+      this.REDIRECT_ON_LOGIN_LOCATION,
+      JSON.stringify(this.history.location)
+    );
     this.auth0.authorize();
   };
 
@@ -27,7 +32,12 @@ export default class Auth0Service {
     this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult);
-        this.history.push("/");
+        const redirectUrl = localStorage.getItem(
+          this.REDIRECT_ON_LOGIN_LOCATION
+        )
+          ? JSON.parse(localStorage.getItem(this.REDIRECT_ON_LOGIN_LOCATION))
+          : "/";
+        this.history.push(redirectUrl);
       } else if (err) {
         alert(
           `There was an error ${
@@ -62,6 +72,7 @@ export default class Auth0Service {
     localStorage.removeItem(this.ID_TOKEN);
     localStorage.removeItem(this.EXPIRES_AT);
     localStorage.removeItem(this.PERMISSIONS);
+    localStorage.removeItem(this.REDIRECT_ON_LOGIN_LOCATION);
     this.userProfile = null;
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,

@@ -8,6 +8,7 @@ import Auth0CallbackComponent from "./Auth0/Auth0Callback";
 import Public from "./Public";
 import Private from "./Private";
 import Courses from "./Courses";
+import SecureComponent from "./SecureRoute";
 
 class App extends Component {
   constructor(props) {
@@ -36,26 +37,18 @@ class App extends Component {
             render={props => <Profile auth0={this.auth0} {...props} />}
           />
           <Route path="/public" component={Public} />
-          <Route
+          <SecureComponent
+            component={Private}
             path="/private"
-            render={props =>
-              this.auth0.isAuthenticated() ? (
-                <Private auth0={this.auth0} {...props} />
-              ) : (
-                this.auth0.login()
-              )
-            }
+            auth0={this.auth0}
+            {...this.props}
           />
-          <Route
+          <SecureComponent
+            component={Courses}
             path="/courses"
-            render={props => {
-              return this.auth0.isAuthenticated() &&
-                this.auth0.userHasPermission(["read:courses"]) ? (
-                <Courses auth0={this.auth0} {...props} />
-              ) : (
-                this.auth0.login()
-              );
-            }}
+            auth0={this.auth0}
+            scopes={["read:courses"]}
+            {...this.props}
           />
         </div>
       </>
