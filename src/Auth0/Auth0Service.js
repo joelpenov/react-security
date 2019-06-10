@@ -90,7 +90,7 @@ export default class Auth0Service {
 
   getUserProfile = callback => {
     if (!this.isAuthenticated()) return null;
-    if (this.userProfile) return this.userProfile;
+    if (this.userProfile) callback(this.userProfile);
     const accessToken = this.getAccessToken();
     this.auth0.client.userInfo(accessToken, (err, profile) => {
       if (err) throw err;

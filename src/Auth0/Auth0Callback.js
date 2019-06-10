@@ -1,11 +1,14 @@
 import React, { Component } from "react";
 import "./spinner.css";
+import AuthContext from "../AuthContext";
 
 export default class Auth0CallbackComponent extends Component {
+  static contextType = AuthContext;
   componentDidMount = () => {
+    const auth0 = this.context;
     const validUriParamsRe = /error|token_type|state|token_type|id_token/;
     if (validUriParamsRe.test(this.props.location.hash)) {
-      this.props.auth0.handleAuthorization();
+      auth0.handleAuthorization();
     } else {
       throw new Error("Invalid callback URL");
     }

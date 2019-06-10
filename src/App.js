@@ -9,6 +9,7 @@ import Public from "./Public";
 import Private from "./Private";
 import Courses from "./Courses";
 import SecureComponent from "./SecureRoute";
+import AuthContext from "./AuthContext";
 
 class App extends Component {
   constructor(props) {
@@ -17,41 +18,33 @@ class App extends Component {
     this.auth0 = new Auth0Service(props.history);
   }
   render() {
+    const auth0 = this.auth0;
     return (
-      <>
-        <Nav auth0={this.auth0} />
+      <AuthContext.Provider value={auth0}>
+        <Nav />
         <div className="body">
-          <Route
-            path="/"
-            exact
-            render={props => <Home auth0={this.auth0} {...props} />}
-          />
+          <Route path="/" exact render={props => <Home {...props} />} />
           <Route
             path="/callback"
             render={props => {
-              return <Auth0CallbackComponent auth0={this.auth0} {...props} />;
+              return <Auth0CallbackComponent {...props} />;
             }}
           />
-          <Route
-            path="/profile"
-            render={props => <Profile auth0={this.auth0} {...props} />}
-          />
+          <Route path="/profile" render={props => <Profile {...props} />} />
           <Route path="/public" component={Public} />
           <SecureComponent
             component={Private}
             path="/private"
-            auth0={this.auth0}
             {...this.props}
           />
           <SecureComponent
             component={Courses}
             path="/courses"
-            auth0={this.auth0}
             scopes={["read:courses"]}
             {...this.props}
           />
         </div>
-      </>
+      </AuthContext.Provider>
     );
   }
 }

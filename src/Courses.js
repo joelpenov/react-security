@@ -1,8 +1,9 @@
 import React from "react";
+import "./Auth0/spinner.css";
 
 export default class Courses extends React.Component {
   state = {
-    courses: []
+    courses: null
   };
 
   componentDidMount() {
@@ -26,26 +27,29 @@ export default class Courses extends React.Component {
   render() {
     return (
       <div>
-        <table>
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Name</th>
-              <th>Category</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.courses.map(course => {
-              return (
-                <tr key={course.id}>
-                  <td>{course.id}</td>
-                  <td>{course.title}</td>
-                  <td>{course.category}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {!this.state.courses && <div className="loader" />}
+        {this.state.courses && (
+          <table>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.courses.map(course => {
+                return (
+                  <tr key={course.id}>
+                    <td>{course.id}</td>
+                    <td>{course.title}</td>
+                    <td>{course.category}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     );
   }
