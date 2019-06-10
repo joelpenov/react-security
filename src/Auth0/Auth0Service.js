@@ -91,6 +91,20 @@ export default class Auth0Service {
     });
   };
 
+  renewToken(callback) {
+    this.auth0.checkSession({}, (err, authResult) => {
+      if (err) {
+        console.log(err);
+      } else if (authResult) {
+        this.setSession(authResult);
+      }
+
+      if (callback) {
+        callback(err, authResult);
+      }
+    });
+  }
+
   userHasPermission = permissions =>
     permissions.every(x => _permissions.includes(x));
 }

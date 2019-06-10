@@ -10,41 +10,58 @@ import Private from "./Private";
 import Courses from "./Courses";
 import SecureComponent from "./SecureRoute";
 import AuthContext from "./AuthContext";
+import "./Auth0/spinner.css";
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-    this.auth0 = new Auth0Service(props.history);
+    this.state = {
+      auth0: new Auth0Service(props.history),
+      tokenRenewalComplete: false
+    };
   }
+
+  componentDidMount() {
+    this.state.auth0.renewToken(res => {
+      this.setState({ tokenRenewalComplete: true });
+    });
+  }
+
   render() {
-    const auth0 = this.auth0;
+    const auth0 = this.state.auth0;
+    const { tokenRenewalComplete } = this.state;
     return (
-      <AuthContext.Provider value={auth0}>
-        <Nav />
-        <div className="body">
-          <Route path="/" exact render={props => <Home {...props} />} />
-          <Route
-            path="/callback"
-            render={props => {
-              return <Auth0CallbackComponent {...props} />;
-            }}
-          />
-          <Route path="/profile" render={props => <Profile {...props} />} />
-          <Route path="/public" component={Public} />
-          <SecureComponent
-            component={Private}
-            path="/private"
-            {...this.props}
-          />
-          <SecureComponent
-            component={Courses}
-            path="/courses"
-            scopes={["read:courses"]}
-            {...this.props}
-          />
-        </div>
-      </AuthContext.Provider>
+      <>
+        {tokenRenewalComplete && (
+          <AuthContext.Provider value={auth0}>
+            <Nav />
+            <div className="body">
+              <Route path="/" exact render={props => <Home {...props} />} />
+              <Route
+                path="/callback"
+                render={props => {
+                  return <Auth0CallbackComponent {...props} />;
+                }}
+              />
+              <Route path="/profile" render={props => <Profile {...props} />} />
+              <Route path="/public" component={Public} />
+              <SecureComponent
+                component={Private}
+                path="/private"
+                {...this.props}
+              />
+              <SecureComponent
+                component={Courses}
+                path="/courses"
+                scopes={["read:courses"]}
+                {...this.props}
+              />
+            </div>
+          </AuthContext.Provider>
+        )}
+        {!tokenRenewalComplete && <div className="loader" />}
+      </>
     );
   }
 }
