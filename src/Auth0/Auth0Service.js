@@ -1,9 +1,14 @@
 import auth0 from "auth0-js";
 
+let _accessToken = "";
+let _expiresAt = 0;
+let _permissions = 0;
+
 export default class Auth0Service {
   constructor(history) {
     this.history = history;
     this.permissionsRequested = "openid profile email read:courses";
+
     this.auth0 = new auth0.WebAuth({
       domain: process.env.REACT_APP_AUTH0_DOMAIN,
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -12,12 +17,8 @@ export default class Auth0Service {
       responseType: "token id_token",
       scope: this.permissionsRequested
     });
-
-    this.ACCESS_TOKEN = "access_token";
-    this.ID_TOKEN = "id_token";
-    this.EXPIRES_AT = "expires_at";
-    this.REDIRECT_ON_LOGIN_LOCATION = "redirect_on_login";
     this.PERMISSIONS = "permissions";
+    this.REDIRECT_ON_LOGIN_LOCATION = "redirect_on_login";
   }
 
   login = () => {
@@ -50,30 +51,21 @@ export default class Auth0Service {
   };
 
   setSession = authResult => {
-    const expiresAt = JSON.stringify(
-      authResult.expiresIn * 1000 + new Date().getTime()
-    );
+    _expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
 
-    const permissions = authResult.scope || this.permissionsRequested || "";
+    _permissions = authResult.scope || this.permissionsRequested || "";
 
-    localStorage.setItem(this.ACCESS_TOKEN, authResult.accessToken);
-    localStorage.setItem(this.ID_TOKEN, authResult.idToken);
-    localStorage.setItem(this.EXPIRES_AT, expiresAt);
-    localStorage.setItem(this.PERMISSIONS, permissions);
+    _accessToken = authResult.accessToken;
   };
 
   isAuthenticated = () => {
-    const expiresAt = localStorage.getItem(this.EXPIRES_AT);
-    return new Date().getTime() < expiresAt;
+    return new Date().getTime() < _expiresAt;
   };
 
   logout = () => {
-    localStorage.removeItem(this.ACCESS_TOKEN);
-    localStorage.removeItem(this.ID_TOKEN);
-    localStorage.removeItem(this.EXPIRES_AT);
-    localStorage.removeItem(this.PERMISSIONS);
-    localStorage.removeItem(this.REDIRECT_ON_LOGIN_LOCATION);
-    this.userProfile = null;
+    _accessToken = "";
+    _expiresAt = 0;
+
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
       returnTo: "http://localhost:1985/"
@@ -81,11 +73,11 @@ export default class Auth0Service {
   };
 
   getAccessToken = () => {
-    const accessToken = localStorage.getItem(this.ACCESS_TOKEN);
+    const accessToken = _accessToken;
     if (!accessToken) {
       console.log("No access token available");
     }
-    return accessToken;
+    return _accessToken;
   };
 
   getUserProfile = callback => {
@@ -99,11 +91,6 @@ export default class Auth0Service {
     });
   };
 
-  userHasPermission = permissions => {
-    const grantedPermissions = localStorage
-      .getItem(this.PERMISSIONS)
-      .split(" ");
-
-    return permissions.every(x => grantedPermissions.includes(x));
-  };
+  userHasPermission = permissions =>
+    permissions.every(x => _permissions.includes(x));
 }
